@@ -83,7 +83,7 @@
 		"modulePaths": [
 			"<rootDir>"
 		],
-		"rootDir": "src"
+		"rootDir": "."
 	},
 	"engines": {
 		"node": "18.x"
