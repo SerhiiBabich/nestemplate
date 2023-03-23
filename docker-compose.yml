@@ -1,20 +1,73 @@
 version: '3.9'
 services:
-  dev-db:
-    image: 'postgres:14'
+
+
+
+
+
+
+  postgresdb:
+    image: postgres:14
+    restart: unless-stopped
     ports:
       - 5432:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=super_secret
       - POSTGRES_DB=nestjs
+    volumes:
+      - nest-postgres:/var/lib/postgresql/data
+
+
+
+
+
   redis:
     image: redis:7
+    restart: unless-stopped
     ports:
       - 6379:6379
+    volumes:
+      - redis:/data
+
+
+
+
+
   redis-commander:
     image: rediscommander/redis-commander:latest
+    restart: unless-stopped
     environment:
       - REDIS_HOSTS=local:redis:6379
     ports:
       - 8081:8081
+
+
+
+
+  api:
+    restart: unless-stopped
+    build:
+      dockerfile: Dockerfile
+      context: .
+      # Only will build development stage from our dockerfile
+      target: development
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - .env
+    # Run a command against the development stage of the image
+    command: npm run start:dev
+    ports:
+      - 1111:1111
+    depends_on:
+      - redis
+      - postgresdb
+
+
+
+
+volumes:
+  redis:
+    driver: local
+  nest-postgres:

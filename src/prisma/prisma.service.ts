@@ -1,3 +1,4 @@
+import { INestApplication } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
@@ -11,6 +12,16 @@ export class PrismaService extends PrismaClient {
 					url: configService.getOrThrow('DATABASE_URL'),
 				},
 			},
+		});
+	}
+
+	async onModuleInit() {
+		await this.$connect();
+	}
+
+	async enableShutdownHooks(app: INestApplication) {
+		this.$on('beforeExit', async () => {
+			await app.close();
 		});
 	}
 

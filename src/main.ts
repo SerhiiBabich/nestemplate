@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import * as session from 'express-session';
 
@@ -7,11 +7,11 @@ import * as connectRedis from 'connect-redis';
 
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule);
-
-	const configService = app.get(ConfigService);
+	const app = await NestFactory.create(AppModule, { bufferLogs: true });
+ 	const configService = app.get(ConfigService);
 
 	const RedisStore = connectRedis(session);
 	const redisClient = createClient({
@@ -38,9 +38,17 @@ async function bootstrap() {
 		new ValidationPipe({
 			transform: true,
 			whitelist: true,
+			errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
 		}),
 	);
 
-	await app.listen(3333);
+	// logs.
+	app.useLogger(app.get(Logger));
+	app.useGlobalInterceptors(new LoggerErrorInterceptor());
+	app.flushLogs();
+
+
+	await app.listen(1111);
 }
 bootstrap();
+
