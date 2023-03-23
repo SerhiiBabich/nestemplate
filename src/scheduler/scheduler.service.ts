@@ -7,16 +7,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class SchedulerService {
 	private readonly logger = new Logger(SchedulerService.name);
 
-	constructor(private readonly prismaService: PrismaService) {}
+	public constructor(private readonly prismaService: PrismaService) {}
 
 	@Cron(CronExpression.EVERY_5_SECONDS)
-	async computeBalances() {
+	public async computeBalances() {
 		const users = await this.prismaService.user.findMany({
 			include: { expenses: true },
 		});
 
 		for (const user of users) {
 			const sum = this.getExpensesSum(user.expenses);
+
 			if (user.initialBalance - sum >= user.currentBalance) {
 				continue;
 			}
@@ -36,7 +37,7 @@ export class SchedulerService {
 		}
 	}
 
-	getExpensesSum(expenses: Expense[]) {
+	public getExpensesSum(expenses: Expense[]) {
 		return expenses.reduce((prev: number, next: Expense) => {
 			return prev + Number(next.amount);
 		}, 0);

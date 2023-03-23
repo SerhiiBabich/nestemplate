@@ -1,5 +1,5 @@
 export class PaginateResultDto {
-	data: Record<string, any>[];
-	count: number;
-	hasMore: boolean;
+	public readonly data: Record<string, any>[];
+	public readonly count: number;
+	public readonly hasMore: boolean;
 }

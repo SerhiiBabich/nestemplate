@@ -7,13 +7,14 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
+
 import { UserSession } from '../type';
 
 @Injectable()
 export class SessionGuard implements CanActivate {
-	constructor(private reflector: Reflector) {}
+	public constructor(private reflector: Reflector) {}
 
-	canActivate(
+	public canActivate(
 		context: ExecutionContext,
 	): boolean | Promise<boolean> | Observable<boolean> {
 		const isPublicRoute = this.reflector.getAllAndOverride<string>(
@@ -25,7 +26,7 @@ export class SessionGuard implements CanActivate {
 			return true;
 		}
 
-		const request = context.switchToHttp().getRequest() as Request;
+		const request = context.switchToHttp().getRequest<Request>();
 		const session = request.session as UserSession;
 
 		if (!session.user) {

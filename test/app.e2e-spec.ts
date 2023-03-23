@@ -1,30 +1,30 @@
-import { Test } from '@nestjs/testing';
 import {
-	CacheModule,
 	CACHE_MANAGER,
+	CacheModule,
 	INestApplication,
 	ValidationPipe,
 } from '@nestjs/common';
-import * as redisStore from 'cache-manager-redis-store';
-
-import { ConfigService, ConfigModule } from '@nestjs/config';
+import { CacheStore } from '@nestjs/common/cache/interfaces/cache-manager.interface';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { Test } from '@nestjs/testing';
+import { Cache } from 'cache-manager';
+import * as redisStore from 'cache-manager-redis-store';
+import * as connectRedis from 'connect-redis';
+import * as session from 'express-session';
 import { RedisClientOptions, RedisClientType } from 'redis';
+import { createClient } from 'redis';
 import { AuthModule } from 'src/auth/auth.module';
-import { SessionGuard, AdminGuard } from 'src/auth/guard';
+import { AuthDto } from 'src/auth/dto';
+import { AdminGuard, SessionGuard } from 'src/auth/guard';
+import { CreateExpenseDto, UpdateExpenseDto } from 'src/expense/dto';
 import { ExpenseModule } from 'src/expense/expense.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { SchedulerModule } from 'src/scheduler/scheduler.module';
 import { UserModule } from 'src/user/user.module';
 import * as request from 'supertest';
-import { AuthDto } from 'src/auth/dto';
-
-import * as session from 'express-session';
-import { createClient } from 'redis';
-import * as connectRedis from 'connect-redis';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateExpenseDto, UpdateExpenseDto } from 'src/expense/dto';
 
 describe('AppController (e2e)', () => {
 	let app: INestApplication;
@@ -44,7 +44,9 @@ describe('AppController (e2e)', () => {
 					isGlobal: true,
 					inject: [ConfigService],
 					useFactory: (configService: ConfigService) => ({
-						store: redisStore,
+						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+						// @ts-ignore
+						store: redisStore as CacheStore,
 						url: configService.getOrThrow('REDIS_URL'),
 					}),
 				}),
@@ -67,7 +69,8 @@ describe('AppController (e2e)', () => {
 
 		const configService = app.get<ConfigService>(ConfigService);
 
-		const RedisStore = connectRedis(session);
+		const redisStore = connectRedis(session);
+
 		redisClient = createClient({
 			url: configService.getOrThrow('REDIS_URL'),
 			legacyMode: true,
@@ -80,7 +83,7 @@ describe('AppController (e2e)', () => {
 				secret: configService.getOrThrow('SESSION_SECRET'),
 				resave: false,
 				saveUninitialized: false,
-				store: new RedisStore({
+				store: new redisStore({
 					client: redisClient,
 				}),
 			}),
@@ -102,13 +105,13 @@ describe('AppController (e2e)', () => {
 	});
 
 	afterAll(async () => {
-		const cacheManager = app.get(CACHE_MANAGER);
-		const cacheClient: RedisClientType = cacheManager.store.getClient();
+		const cacheManager = app.get<Cache>(CACHE_MANAGER);
+		const cacheClient: RedisClientType = (cacheManager.store as redisStore).getClient(); // eslint-disable-line
 
 		await cacheClient.quit();
 		await redisClient.disconnect();
 
-		app.close();
+		void app.close();
 	});
 
 	describe('App module', () => {
@@ -146,7 +149,7 @@ describe('AppController (e2e)', () => {
 					.expect('Set-Cookie', /connect.sid/)
 					.expect(200)
 					.expect(({ headers }) => {
-						cookie = headers?.['set-cookie'];
+						cookie = headers?.['set-cookie']; // eslint-disable-line
 					});
 			});
 		});
@@ -165,6 +168,7 @@ describe('AppController (e2e)', () => {
 
 	describe('Expense', () => {
 		let expenseId: number;
+
 		it('should create an expenses', async () => {
 			const expense1: CreateExpenseDto = {
 				title: 'First expense',
@@ -198,16 +202,16 @@ describe('AppController (e2e)', () => {
 				.set('Cookie', cookie)
 				.expect(200)
 				.expect(({ body }) => {
-					expect(body.data.length).toBe(2);
+					expect(body.data.length).toBe(2); // eslint-disable-line
 					expect(body).toEqual(
 						expect.objectContaining({
-							data: expect.any(Array),
+							data: expect.any(Array), // eslint-disable-line
 							count: 2,
 							hasMore: false,
 						}),
 					);
 
-					expenseId = body.data[0].id;
+					expenseId = body.data[0].id; // eslint-disable-line
 				});
 		});
 
@@ -227,7 +231,7 @@ describe('AppController (e2e)', () => {
 				.set('Cookie', cookie)
 				.expect(404)
 				.expect(({ body }) => {
-					expect(body.message).toEqual('Resource does not exist');
+					expect(body.message).toEqual('Resource does not exist'); // eslint-disable-line
 				});
 		});
 
@@ -242,15 +246,11 @@ describe('AppController (e2e)', () => {
 				.send(dto)
 				.expect(200)
 				.expect(({ body }) => {
-					expect(body.description).toEqual(dto.description);
+					expect(body.description).toEqual(dto.description); // eslint-disable-line
 				});
 		});
 
 		it('should delete expense by id', async () => {
-			const dto: UpdateExpenseDto = {
-				description: 'Updated description',
-			};
-
 			await request(app.getHttpServer())
 				.delete(`/expense/${expenseId}`)
 				.set('Cookie', cookie)

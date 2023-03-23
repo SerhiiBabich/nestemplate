@@ -5,13 +5,14 @@ import {
 } from '@nestjs/common';
 import { PaginateDto, PaginateResultDto } from 'src/common/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+
 import { CreateExpenseDto, UpdateExpenseDto } from './dto';
 
 @Injectable()
 export class ExpenseService {
-	constructor(private readonly prismaService: PrismaService) {}
+	public constructor(private readonly prismaService: PrismaService) {}
 
-	async getAllUserExpenses(
+	public async getAllUserExpenses(
 		userId: number,
 		paginate: PaginateDto,
 	): Promise<PaginateResultDto> {
@@ -36,7 +37,7 @@ export class ExpenseService {
 		};
 	}
 
-	async getAllUserExpenseById(userId: number, expenseId: number) {
+	public async getAllUserExpenseById(userId: number, expenseId: number) {
 		const expense = await this.prismaService.expense.findFirst({
 			where: {
 				id: expenseId,
@@ -63,7 +64,10 @@ export class ExpenseService {
 		return expense;
 	}
 
-	async createExpense(userId: number, createExpenseDto: CreateExpenseDto) {
+	public async createExpense(
+		userId: number,
+		createExpenseDto: CreateExpenseDto,
+	) {
 		const newExpense = await this.prismaService.expense.create({
 			data: {
 				...createExpenseDto,
@@ -73,7 +77,8 @@ export class ExpenseService {
 
 		return newExpense;
 	}
-	async updateExpenseById(
+
+	public async updateExpenseById(
 		userId: number,
 		expenseId: number,
 		updateExpenseDto: UpdateExpenseDto,
@@ -102,7 +107,7 @@ export class ExpenseService {
 		return updatedExpense;
 	}
 
-	async deleteExpenseById(userId: number, expenseId: number) {
+	public async deleteExpenseById(userId: number, expenseId: number) {
 		const expense = await this.prismaService.expense.findFirst({
 			where: {
 				id: expenseId,

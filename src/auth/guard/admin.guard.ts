@@ -8,13 +8,14 @@ import { Reflector } from '@nestjs/core';
 import { Role } from '@prisma/client';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
+
 import { UserSession } from '../type';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
-	constructor(private reflector: Reflector) {}
+	public constructor(private reflector: Reflector) {}
 
-	canActivate(
+	public canActivate(
 		context: ExecutionContext,
 	): boolean | Promise<boolean> | Observable<boolean> {
 		const isPublicRoute = this.reflector.getAllAndOverride<string>(
@@ -26,7 +27,7 @@ export class AdminGuard implements CanActivate {
 			return true;
 		}
 
-		const request = context.switchToHttp().getRequest() as Request;
+		const request = context.switchToHttp().getRequest<Request>();
 		const session = request.session as UserSession;
 
 		if (session.user.role !== Role.ADMIN) {

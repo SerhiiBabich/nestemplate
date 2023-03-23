@@ -1,19 +1,19 @@
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import * as session from 'express-session';
-
-import { createClient } from 'redis';
 import * as connectRedis from 'connect-redis';
+import * as session from 'express-session';
+import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
+import { createClient } from 'redis';
 
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
-import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
+import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule, { bufferLogs: true });
- 	const configService = app.get(ConfigService);
+	const configService = app.get(ConfigService);
 
-	const RedisStore = connectRedis(session);
+	const redisStore = connectRedis(session);
 	const redisClient = createClient({
 		url: configService.getOrThrow('REDIS_URL'),
 		legacyMode: true,
@@ -24,7 +24,7 @@ async function bootstrap() {
 			secret: configService.getOrThrow('SESSION_SECRET'),
 			resave: false,
 			saveUninitialized: false,
-			store: new RedisStore({
+			store: new redisStore({
 				client: redisClient,
 			}),
 		}),
@@ -39,16 +39,18 @@ async function bootstrap() {
 			transform: true,
 			whitelist: true,
 			errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+			forbidUnknownValues: true, // https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-18413
 		}),
 	);
 
 	// logs.
 	app.useLogger(app.get(Logger));
 	app.useGlobalInterceptors(new LoggerErrorInterceptor());
-	app.flushLogs();
 
+	const prismaService = app.get(PrismaService);
+
+	prismaService.enableShutdownHooks(app);
 
 	await app.listen(1111);
 }
-bootstrap();
-
+void bootstrap();

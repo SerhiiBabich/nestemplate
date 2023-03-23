@@ -1,55 +1,24 @@
 import { CacheModule, Module } from '@nestjs/common';
+import { CacheStore } from '@nestjs/common/cache/interfaces/cache-manager.interface';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-redis-store';
+import { LoggerModule } from 'nestjs-pino';
+import { RedisClientOptions } from 'redis';
+import { ExpenseModule } from './expense/expense.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
+import { UserModule } from './user/user.module';
 
+import { PinoLoggerParams } from '../config';
+import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { AdminGuard, SessionGuard } from './auth/guard';
-import { PrismaModule } from './prisma/prisma.module';
-import { UserModule } from './user/user.module';
-import { ExpenseModule } from './expense/expense.module';
-import { RedisClientOptions } from 'redis';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
-import { SchedulerModule } from './scheduler/scheduler.module';
-import { AppController } from './app.controller';
-import { LoggerModule } from 'nestjs-pino';
 
 @Module({
 	imports: [
-		LoggerModule.forRoot({
-			pinoHttp: {
-				customLogLevel: function (req, res, err: Error | undefined) {
-					const badRequestResponseCode = 400;
-					const serverErrorResponseCode = 500;
-
-					if (
-						res.statusCode >= badRequestResponseCode &&
-						res.statusCode < serverErrorResponseCode
-					) {
-						return 'warn';
-					} else if (res.statusCode >= serverErrorResponseCode || err) {
-						return 'error';
-					}
-
-
-					return 'debug';
-				},
-				level: 'debug',
-
-				quietReqLogger: true,
-				customProps: (req, res) => ({
-					context: 'HTTP',
-				}),
-				transport: {
-					target: 'pino-pretty',
-
-					options: {
-						colorize: true,
-						singleLine: true,
-					},
-				},
-			},
-		}),
+		LoggerModule.forRoot(PinoLoggerParams),
 		SchedulerModule,
 		PrismaModule,
 		AuthModule,
@@ -60,8 +29,8 @@ import { LoggerModule } from 'nestjs-pino';
 			isGlobal: true,
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
-				store: redisStore,
-				url: configService.getOrThrow('REDIS_URL'),
+				store: redisStore as CacheStore,
+				url: configService.getOrThrow<string>('REDIS_URL'),
 			}),
 		}),
 		ConfigModule.forRoot({ isGlobal: true }),

@@ -1,7 +1,8 @@
 import { Expense, Role } from '@prisma/client';
+
 const date = new Date();
 
-export const UserStub = () => ({
+export const userStub = () => ({
 	id: 1,
 	email: 'serhii@test.com',
 	firstName: null,
@@ -15,7 +16,7 @@ export const UserStub = () => ({
 	updatedAt: date,
 });
 
-export const UsersWithExpensesStub = () => [
+export const usersWithExpensesStub = () => [
 	{
 		id: 1,
 		email: 'serhii@test.com',

@@ -1,3 +1,3 @@
 export * from './get-user-id';
-export * from './public-route';
 export * from './only-admin';
+export * from './public-route';

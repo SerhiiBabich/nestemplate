@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
-	constructor(readonly configService: ConfigService) {
+	public constructor(configService: ConfigService) {
 		super({
 			datasources: {
 				db: {
@@ -15,17 +15,17 @@ export class PrismaService extends PrismaClient {
 		});
 	}
 
-	async onModuleInit() {
+	public async onModuleInit() {
 		await this.$connect();
 	}
 
-	async enableShutdownHooks(app: INestApplication) {
-		this.$on('beforeExit', async () => {
+	public enableShutdownHooks(app: INestApplication) {
+		this.$on('beforeExit', async (): Promise<void> => {
 			await app.close();
 		});
 	}
 
-	cleanDb() {
+	public cleanDb() {
 		return this.$transaction([
 			this.expense.deleteMany(),
 			this.user.deleteMany(),

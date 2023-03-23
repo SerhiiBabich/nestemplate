@@ -6,11 +6,11 @@ export class PaginateDto {
 	@IsOptional()
 	@Type(() => Number)
 	@Max(20)
-	limit = 20;
+	public readonly limit = 20;
 
 	@IsNumber()
 	@IsOptional()
 	@Type(() => Number)
 	@Max(1000)
-	offset = 0;
+	public readonly offset = 0;
 }

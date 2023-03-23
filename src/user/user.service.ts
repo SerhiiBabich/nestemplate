@@ -3,9 +3,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UserService {
-	constructor(private readonly prismaService: PrismaService) {}
+	public constructor(private readonly prismaService: PrismaService) {}
 
-	getAllUsers() {
+	public getAllUsers() {
 		return this.prismaService.user.findMany({
 			select: {
 				id: true,
@@ -21,7 +21,7 @@ export class UserService {
 		});
 	}
 
-	async getMe(id: number) {
+	public async getMe(id: number) {
 		const user = await this.prismaService.user.findUnique({
 			where: { id },
 		});

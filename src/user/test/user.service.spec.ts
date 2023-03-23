@@ -1,9 +1,10 @@
 import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { User } from '@prisma/client';
+
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserService } from '../user.service';
-import { UserStub } from './stub';
+import { userStub } from './stub';
 
 jest.mock('../../prisma/prisma.service');
 
@@ -29,23 +30,24 @@ describe('UserService', () => {
 		let user: User;
 
 		beforeEach(async () => {
-			user = await userService.getMe(UserStub().id);
+			user = await userService.getMe(userStub().id);
 		});
 
 		test('findUnique() should be called', () => {
 			expect(prismaService.user.findUnique).toHaveBeenCalledWith({
 				where: {
-					id: UserStub().id,
+					id: userStub().id,
 				},
 			});
 
 			expect(prismaService.user.findUnique).toHaveReturnedWith(
-				Promise.resolve(UserStub()),
+				Promise.resolve(userStub()),
 			);
 		});
 
 		it('should return user', () => {
-			const _user = UserStub();
+			const _user = userStub();
+
 			expect(user).toMatchObject(_user);
 		});
 	});

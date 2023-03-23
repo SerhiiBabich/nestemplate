@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+
 import { SimpleService } from '../simple.service';
 
 describe('SimpleService', () => {
@@ -18,6 +19,7 @@ describe('SimpleService', () => {
 
 	describe('testMe()', () => {
 		let result;
+
 		beforeEach(() => {
 			result = simpleService.testMe(5);
 		});
@@ -33,6 +35,7 @@ describe('SimpleService', () => {
 
 	describe('testMeWithMocks()', () => {
 		let result;
+
 		beforeEach(() => {
 			// Math.random = jest.fn().mockReturnValue(0.02);
 			jest.spyOn(simpleService, 'genRandom').mockReturnValue(2);

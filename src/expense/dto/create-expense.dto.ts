@@ -2,15 +2,15 @@ import { IsDateString, IsOptional, IsString } from 'class-validator';
 
 export class CreateExpenseDto {
 	@IsString()
-	title: string;
+	public readonly title: string;
 
 	@IsString()
 	@IsOptional()
-	description?: string;
+	public readonly description?: string;
 
 	@IsString()
-	amount: string;
+	public readonly amount: string;
 
 	@IsDateString()
-	date: Date;
+	public readonly date: Date;
 }

@@ -13,44 +13,44 @@ import {
 	Query,
 	UseInterceptors,
 } from '@nestjs/common';
-import { GetUserId } from 'src/auth/decorator';
+import { getUserId } from 'src/auth/decorator';
 import { PaginateDto } from 'src/common/dto';
 import { CreateExpenseDto, UpdateExpenseDto } from './dto';
 import { ExpenseService } from './expense.service';
 
 @Controller('expense')
 export class ExpenseController {
-	constructor(private readonly expenseService: ExpenseService) {}
+	public constructor(private readonly expenseService: ExpenseService) {}
 
 	@UseInterceptors(CacheInterceptor)
 	@CacheTTL(5)
 	@Get()
-	getAllUserExpenses(
-		@GetUserId() userId: number,
+	public getAllUserExpenses(
+		@getUserId() userId: number,
 		@Query() paginate: PaginateDto,
 	) {
 		return this.expenseService.getAllUserExpenses(userId, paginate);
 	}
 
 	@Get(':id')
-	getAllUserExpenseById(
-		@GetUserId() userId: number,
+	public getAllUserExpenseById(
+		@getUserId() userId: number,
 		@Param('id') expenseId: number,
 	) {
 		return this.expenseService.getAllUserExpenseById(userId, expenseId);
 	}
 
 	@Post()
-	createExpense(
-		@GetUserId() userId: number,
+	public createExpense(
+		@getUserId() userId: number,
 		@Body() createExpenseDto: CreateExpenseDto,
 	) {
 		return this.expenseService.createExpense(userId, createExpenseDto);
 	}
 
 	@Patch(':id')
-	updateExpenseById(
-		@GetUserId() userId: number,
+	public updateExpenseById(
+		@getUserId() userId: number,
 		@Param('id') expenseId: number,
 		@Body() updateExpenseDto: UpdateExpenseDto,
 	) {
@@ -63,8 +63,8 @@ export class ExpenseController {
 
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete(':id')
-	deleteExpenseById(
-		@GetUserId() userId: number,
+	public deleteExpenseById(
+		@getUserId() userId: number,
 		@Param('id') expenseId: number,
 	) {
 		return this.expenseService.deleteExpenseById(userId, expenseId);
