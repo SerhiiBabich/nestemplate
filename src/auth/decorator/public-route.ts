@@ -1,3 +1,4 @@
 import { SetMetadata } from '@nestjs/common';
 
-export const publicRoute = () => SetMetadata('publicRouter', true);
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const PublicRoute = () => SetMetadata('PUBLIC_ROUTE', true);

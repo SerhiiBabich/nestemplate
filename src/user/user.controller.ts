@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { getUserId, onlyAdmin } from 'src/auth/decorator';
+import { GetUserId, OnlyAdmin } from 'src/auth/decorator';
 
 import { UserService } from './user.service';
 
@@ -7,14 +7,14 @@ import { UserService } from './user.service';
 export class UserController {
 	public constructor(private readonly userService: UserService) {}
 
-	@onlyAdmin()
+	@OnlyAdmin()
 	@Get('all')
 	public getAllUsers() {
 		return this.userService.getAllUsers();
 	}
 
 	@Get('me')
-	public getMe(@getUserId() userId: number) {
+	public getMe(@GetUserId() userId: number) {
 		return this.userService.getMe(userId);
 	}
 }

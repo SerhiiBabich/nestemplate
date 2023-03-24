@@ -1,3 +1,4 @@
 import { SetMetadata } from '@nestjs/common';
 
-export const onlyAdmin = () => SetMetadata('onlyAdmin', true);
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const OnlyAdmin = () => SetMetadata('ONLY_ADMIN', true);

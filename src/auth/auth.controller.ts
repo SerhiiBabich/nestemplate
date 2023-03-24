@@ -9,11 +9,11 @@ import {
 import { Role } from '@prisma/client';
 
 import { AuthService } from './auth.service';
-import { publicRoute } from './decorator';
+import { PublicRoute } from './decorator';
 import { AuthDto } from './dto';
 import { UserSession } from './type';
 
-@publicRoute()
+@PublicRoute()
 @Controller('auth')
 export class AuthController {
 	public constructor(private readonly authService: AuthService) {}

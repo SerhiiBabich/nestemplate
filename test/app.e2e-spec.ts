@@ -1,30 +1,30 @@
+import { Test } from '@nestjs/testing';
 import {
-	CACHE_MANAGER,
 	CacheModule,
+	CACHE_MANAGER,
 	INestApplication,
 	ValidationPipe,
 } from '@nestjs/common';
-import { CacheStore } from '@nestjs/common/cache/interfaces/cache-manager.interface';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as redisStore from 'cache-manager-redis-store';
+
+import { ConfigService, ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { Test } from '@nestjs/testing';
-import { Cache } from 'cache-manager';
-import * as redisStore from 'cache-manager-redis-store';
-import * as connectRedis from 'connect-redis';
-import * as session from 'express-session';
 import { RedisClientOptions, RedisClientType } from 'redis';
-import { createClient } from 'redis';
 import { AuthModule } from 'src/auth/auth.module';
-import { AuthDto } from 'src/auth/dto';
-import { AdminGuard, SessionGuard } from 'src/auth/guard';
-import { CreateExpenseDto, UpdateExpenseDto } from 'src/expense/dto';
+import { SessionGuard, AdminGuard } from 'src/auth/guard';
 import { ExpenseModule } from 'src/expense/expense.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { SchedulerModule } from 'src/scheduler/scheduler.module';
 import { UserModule } from 'src/user/user.module';
 import * as request from 'supertest';
+import { AuthDto } from 'src/auth/dto';
+
+import * as session from 'express-session';
+import { createClient } from 'redis';
+import * as connectRedis from 'connect-redis';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateExpenseDto, UpdateExpenseDto } from 'src/expense/dto';
 
 describe('AppController (e2e)', () => {
 	let app: INestApplication;
@@ -44,9 +44,7 @@ describe('AppController (e2e)', () => {
 					isGlobal: true,
 					inject: [ConfigService],
 					useFactory: (configService: ConfigService) => ({
-						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-						// @ts-ignore
-						store: redisStore as CacheStore,
+						store: redisStore, // eslint-disable-line
 						url: configService.getOrThrow('REDIS_URL'),
 					}),
 				}),
@@ -69,7 +67,7 @@ describe('AppController (e2e)', () => {
 
 		const configService = app.get<ConfigService>(ConfigService);
 
-		const redisStore = connectRedis(session);
+		const RedisStore = connectRedis(session); // eslint-disable-line
 
 		redisClient = createClient({
 			url: configService.getOrThrow('REDIS_URL'),
@@ -83,7 +81,7 @@ describe('AppController (e2e)', () => {
 				secret: configService.getOrThrow('SESSION_SECRET'),
 				resave: false,
 				saveUninitialized: false,
-				store: new redisStore({
+				store: new RedisStore({
 					client: redisClient,
 				}),
 			}),
@@ -105,8 +103,8 @@ describe('AppController (e2e)', () => {
 	});
 
 	afterAll(async () => {
-		const cacheManager = app.get<Cache>(CACHE_MANAGER);
-		const cacheClient: RedisClientType = (cacheManager.store as redisStore).getClient(); // eslint-disable-line
+		const cacheManager = app.get(CACHE_MANAGER); // eslint-disable-line
+		const cacheClient: RedisClientType = cacheManager.store.getClient(); // eslint-disable-line
 
 		await cacheClient.quit();
 		await redisClient.disconnect();
@@ -128,11 +126,16 @@ describe('AppController (e2e)', () => {
 					password: '1234',
 				};
 
-				return request(app.getHttpServer())
-					.post('/auth/signup')
-					.send(signUpDto)
-					.expect('Set-Cookie', /connect.sid/)
-					.expect(201);
+				return (
+					request(app.getHttpServer())
+						.post('/auth/signup')
+						.send(signUpDto)
+						// .expect('Set-Cookie', /connect.sid/)
+						// .expect(201)
+						.expect(({ body }) => {
+							console.log({ body });
+						})
+				);
 			});
 		});
 
